@@ -57,8 +57,8 @@ class Venue(db.Model):
     upcoming_shows_count = db.Column(db.Integer)  # default 0
     # DEVELOPER NOTE: uncertain how to implement arrays and arrays of objects so defined as strings until time for further research
     # parent to show table
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    shows = db.relationship('Show', backref='Venue', lazy=True)
+    # DONE: implement any missing fields, as a database migration using Flask-Migrate
 
 
 class Artist(db.Model):
@@ -83,10 +83,19 @@ class Artist(db.Model):
     past_shows_count = db.Column(db.Integer)  # default 0
     upcoming_shows_count = db.Column(db.Integer)  # default 0
     # parent to show table
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    shows = db.relationship('Show', backref='Artist', lazy=True)
+    # DONE: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+
+
+class Show(db.Model):
+    __tablename__ = 'Show'
+    # fields: id (primary key), venue.id(foreign key), artist.id(foriegn key), start time(string)
+    id = db.Column(db.Integer, primary_key=True)
+    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
+    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
+    start_time = db.Column(db.String)
 
 #----------------------------------------------------------------------------#
 # Filters.
