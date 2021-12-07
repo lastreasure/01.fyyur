@@ -203,54 +203,58 @@ def show_venue(venue_id):
     # chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id).all()
     chosen_venue = db.session.query(Venue).all()
     # print(chosen_venue)
+    try:
+        for venue_attribute in chosen_venue:
 
-    for venue_attribute in chosen_venue:
+            past_shows_list = db.session.query(
+                Show).filter(venue_id == Show.venue_id)
 
-        past_shows_list = db.session.query(
-            Show).filter(venue_id == Show.venue_id)
+            past_shows = []
+            upcoming_shows = []
+            for past_show in past_shows_list:
+                # print('id', past_show.artist_id)
+                past_show_artist = db.session.query(Artist.name, Artist.image_link).filter(
+                    past_show.artist_id == Artist.id).first()
+                # print(past_show_artist.name)
 
-        past_shows = []
-        upcoming_shows = []
-        for past_show in past_shows_list:
-            # print('id', past_show.artist_id)
-            past_show_artist = db.session.query(Artist.name, Artist.image_link).filter(
-                past_show.artist_id == Artist.id).first()
-            # print(past_show_artist.name)
+                show_list = {
+                    "artist_id": past_show.artist_id,
+                    "artist_name": past_show_artist.name,
+                    "artist_image_link": past_show_artist.image_link,
+                    "start_time": past_show.start_time
+                }
 
-            show_list = {
-                "artist_id": past_show.artist_id,
-                "artist_name": past_show_artist.name,
-                "artist_image_link": past_show_artist.image_link,
-                "start_time": past_show.start_time
-            }
+                if (parser.parse(past_show.start_time) < pytz.utc.localize(datetime.now())):
+                    past_shows.append(show_list)
+                    # print(past_shows)
+                else:
+                    upcoming_shows.append(show_list)
+                    # print(upcoming_shows)
 
-            if (parser.parse(past_show.start_time) < pytz.utc.localize(datetime.now())):
-                past_shows.append(show_list)
-                # print(past_shows)
-            else:
-                upcoming_shows.append(show_list)
-                # print(upcoming_shows)
-
-    data = {
-        "id": venue_attribute.id,
-        "name": venue_attribute.name,
-        "genres": venue_attribute.genres,
-        "address": venue_attribute.address,
-        "city": venue_attribute.city,
-        "state": venue_attribute.state,
-        "phone": venue_attribute.phone,
-        "website": venue_attribute.website,
-        "facebook_link": venue_attribute.facebook_link,
-        "seeking_talent": venue_attribute.seeking_talent,
-        "seeking_description": venue_attribute.seeking_description,
-        "image_link": venue_attribute.image_link,
-        "past_shows": past_shows,
-        "upcoming_shows": upcoming_shows,
-        "past_shows_count": len(past_shows),
-        "upcoming_shows_count": len(upcoming_shows),
-    }
-
-    return render_template('pages/show_venue.html', venue=data)
+        data = {
+            "id": venue_attribute.id,
+            "name": venue_attribute.name,
+            "genres": venue_attribute.genres,
+            "address": venue_attribute.address,
+            "city": venue_attribute.city,
+            "state": venue_attribute.state,
+            "phone": venue_attribute.phone,
+            "website": venue_attribute.website,
+            "facebook_link": venue_attribute.facebook_link,
+            "seeking_talent": venue_attribute.seeking_talent,
+            "seeking_description": venue_attribute.seeking_description,
+            "image_link": venue_attribute.image_link,
+            "past_shows": past_shows,
+            "upcoming_shows": upcoming_shows,
+            "past_shows_count": len(past_shows),
+            "upcoming_shows_count": len(upcoming_shows),
+        }
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+        return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
 #  ----------------------------------------------------------------
