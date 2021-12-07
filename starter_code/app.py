@@ -88,7 +88,7 @@ class Artist(db.Model):
     shows = db.relationship('Show', backref='Artist', lazy=True)
     # DONE: implement any missing fields, as a database migration using Flask-Migrate
 
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+# DONE Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
 
 class Show(db.Model):
@@ -155,32 +155,10 @@ def venues():
     finally:
         return render_template('pages/venues.html', areas=data)
 
-    # data = [{
-    #     "city": "San Francisco",
-    #     "state": "CA",
-    #     "venues": [{
-    #         "id": 1,
-    #         "name": "The Musical Hop",
-    #         "num_upcoming_shows": 0,
-    #     }, {
-    #         "id": 3,
-    #         "name": "Park Square Live Music & Coffee",
-    #         "num_upcoming_shows": 1,
-    #     }]
-    # }, {
-    #     "city": "New York",
-    #     "state": "NY",
-    #     "venues": [{
-    #         "id": 2,
-    #         "name": "The Dueling Pianos Bar",
-    #         "num_upcoming_shows": 0,
-    #     }]
-    # }]
-
 
 @ app.route('/venues/search', methods=['POST'])
 def search_venues():
-    # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
+    # DONE: implement search on artists with partial string search. Ensure it is case-insensitive.
     # seach for Hop should return "The Musical Hop".
     # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
     # case-insensitive - ilike
@@ -188,35 +166,30 @@ def search_venues():
     data = []
     search_item = request.form.get("search_term")
     # print(search_item)
+    try:
+        venue_query_results = db.session.query(Venue.name, Venue.id, Venue.upcoming_shows_count).filter(
+            Venue.name.ilike('%' + search_item + '%')).all()
+        count_upcoming_shows = len(venue_query_results)
+        # print('count', count_upcoming_shows)
+        # print(venue_query_results)
+        for venue in venue_query_results:
+            # print(venue.id)
+            # print(venue.name)
+            data.append({
+                "id": venue.id,
+                "name": venue.name,
+                "num_upcoming_shows": 0
+            })
 
-    venue_query_results = db.session.query(Venue.name, Venue.id, Venue.upcoming_shows_count).filter(
-        Venue.name.ilike('%' + search_item + '%')).all()
-    count_upcoming_shows = len(venue_query_results)
-    # print('count', count_upcoming_shows)
-    # print(venue_query_results)
-    for venue in venue_query_results:
-        # print(venue.id)
-        # print(venue.name)
-        data.append({
-            "id": venue.id,
-            "name": venue.name,
-            "num_upcoming_shows": 0
-        })
-
-        response = {
-            "count": count_upcoming_shows,
-            "data": data
-        }
-
-    # response = {
-    #     "count": 1,
-    #     "data": [{
-    #         "id": 2,
-    #         "name": "The Dueling Pianos Bar",
-    #         "num_upcoming_shows": 0,
-    #     }]
-    # }
-    return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+            response = {
+                "count": count_upcoming_shows,
+                "data": data
+            }
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 
 @ app.route('/venues/<int:venue_id>')
