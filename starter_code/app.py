@@ -199,10 +199,10 @@ def search_venues():
 @ app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
     # shows the venue page with the given venue_id
-    # TODO: replace with real venue data from the venues table, using venue_id
+    # DONE: replace with real venue data from the venues table, using venue_id
     # chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id).all()
     chosen_venue = db.session.query(Venue).all()
-    print(chosen_venue)
+    # print(chosen_venue)
 
     for venue_attribute in chosen_venue:
 
@@ -212,10 +212,10 @@ def show_venue(venue_id):
         past_shows = []
         upcoming_shows = []
         for past_show in past_shows_list:
-            print('id', past_show.artist_id)
+            # print('id', past_show.artist_id)
             past_show_artist = db.session.query(Artist.name, Artist.image_link).filter(
                 past_show.artist_id == Artist.id).first()
-            print(past_show_artist.name)
+            # print(past_show_artist.name)
 
             show_list = {
                 "artist_id": past_show.artist_id,
@@ -226,10 +226,10 @@ def show_venue(venue_id):
 
             if (parser.parse(past_show.start_time) < pytz.utc.localize(datetime.now())):
                 past_shows.append(show_list)
-                print(past_shows)
+                # print(past_shows)
             else:
                 upcoming_shows.append(show_list)
-                print(upcoming_shows)
+                # print(upcoming_shows)
 
     data = {
         "id": venue_attribute.id,
@@ -264,15 +264,57 @@ def create_venue_form():
 
 @ app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-    # TODO: insert form data as a new Venue record in the db, instead
-    # TODO: modify data to be the data object returned from db insertion
+    # DONE: insert form data as a new Venue record in the db, instead
+    # DONE: modify data to be the data object returned from db insertion
+    try:
+        name = request.form.get('name')
+        city = request.form.get('city')
+        state = request.form.get('state')
+        address = request.form.get('address')
+        phone = request.form.get('phone')
+        image_link = request.form.get('image_link')
+        facebook_link = request.form.get('facebook_link')
+        genres = request.form.getlist('genres')
+        website = request.form.get('website')
+        seeking_talent = request.form.get('seeking_talent')
+        seeking_description = request.form.get('seeking_description')
 
-    # on successful db insert, flash success
-    flash('Venue ' + request.form['name'] + ' was successfully listed!')
-    # TODO: on unsuccessful db insert, flash an error instead.
+        new_venue_listing = Venue(
+            id=5,
+            name=name,
+            city=city,
+            state=state,
+            address=address,
+            phone=phone,
+            image_link=image_link,
+            facebook_link=facebook_link,
+            genres=', '.join(genres),
+            website=website,
+            seeking_talent=bool(seeking_talent),
+            seeking_description=seeking_description,
+        )
+        print(new_venue_listing.name)
+        print(new_venue_listing.genres)
+        print(new_venue_listing)
+        # then 'try' to add to sessions and 'flash' success
+        db.session.add(new_venue_listing)
+        db.session.commit()
+        # on successful db insert, flash success
+        flash('Venue ' + request.form['name'] + ' was successfully listed!')
+        # then 'except' rollback
+        # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-    return render_template('pages/home.html')
+        flash('An error occurred. Venue ' +
+              request.form['name'] + ' unfortuntely could not be listed.')
+    # then finally close session
+    finally:
+        db.session.close()
+        # the return
+        return render_template('pages/home.html')
 
 
 @ app.route('/venues/<venue_id>', methods=['DELETE'])
