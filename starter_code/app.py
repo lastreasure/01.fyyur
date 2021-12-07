@@ -201,11 +201,11 @@ def show_venue(venue_id):
     # shows the venue page with the given venue_id
     # DONE: replace with real venue data from the venues table, using venue_id
     # chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id).all()
-    chosen_venue = db.session.query(Venue).all()
+    chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id)
     # print(chosen_venue)
     try:
         for venue_attribute in chosen_venue:
-
+            # print(venue_attribute)
             past_shows_list = db.session.query(
                 Show).filter(venue_id == Show.venue_id)
 
@@ -231,24 +231,24 @@ def show_venue(venue_id):
                     upcoming_shows.append(show_list)
                     # print(upcoming_shows)
 
-        data = {
-            "id": venue_attribute.id,
-            "name": venue_attribute.name,
-            "genres": venue_attribute.genres,
-            "address": venue_attribute.address,
-            "city": venue_attribute.city,
-            "state": venue_attribute.state,
-            "phone": venue_attribute.phone,
-            "website": venue_attribute.website,
-            "facebook_link": venue_attribute.facebook_link,
-            "seeking_talent": venue_attribute.seeking_talent,
-            "seeking_description": venue_attribute.seeking_description,
-            "image_link": venue_attribute.image_link,
-            "past_shows": past_shows,
-            "upcoming_shows": upcoming_shows,
-            "past_shows_count": len(past_shows),
-            "upcoming_shows_count": len(upcoming_shows),
-        }
+            data = {
+                "id": venue_attribute.id,
+                "name": venue_attribute.name,
+                "genres": venue_attribute.genres,
+                "address": venue_attribute.address,
+                "city": venue_attribute.city,
+                "state": venue_attribute.state,
+                "phone": venue_attribute.phone,
+                "website": venue_attribute.website,
+                "facebook_link": venue_attribute.facebook_link,
+                "seeking_talent": venue_attribute.seeking_talent,
+                "seeking_description": venue_attribute.seeking_description,
+                "image_link": venue_attribute.image_link,
+                "past_shows": past_shows,
+                "upcoming_shows": upcoming_shows,
+                "past_shows_count": len(past_shows),
+                "upcoming_shows_count": len(upcoming_shows),
+            }
     except:
         db.session.rollback()
         print(sys.exc_info())
@@ -321,19 +321,32 @@ def create_venue_submission():
         return render_template('pages/home.html')
 
 
-@ app.route('/venues/<venue_id>', methods=['DELETE'])
-def delete_venue(venue_id):
-    # TODO: Complete this endpoint for taking a venue_id, and using
-    # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-
-    # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-    # clicking that button delete it from the db then redirect the user to the homepage
-    return None
-
+@ app.route('/venues/<venue_id>/delete', methods=['DELETE'])
+# def delete_venue(venue_id):
+#     # TODO: Complete this endpoint for taking a venue_id, and using
+#     # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+#     # query = Task.query.filter_by(category='Archived')
+#     # query.delete()
+#     venue_name_to_delete = db.session.query(
+#         Venue.name).filter(venue_id)
+#     print(venue_name_to_delete)
+#     try:
+#         venue_to_delete = db.session.query(Venue).filter(Venue.id == venue_id)
+#         venue_to_delete.delete()
+#         db.session.commit()
+#         flash('Venue ' + venue_name_to_delete + ' was successfully deleted!')
+#     except:
+#         db.session.rollback()
+#         print(sys.exc_info())
+#         flash('An error occurred. Venue ' + venue_name_to_delete +
+#               ' unfortuntely could not be listed.')
+#     finally:
+#         db.session.close()
+#         return render_template('pages/home.html')
+# BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
+# clicking that button delete it from the db then redirect the user to the homepage
 #  Artists
 #  ----------------------------------------------------------------
-
-
 @ app.route('/artists')
 def artists():
     # TODO: replace with real data returned from querying the database
