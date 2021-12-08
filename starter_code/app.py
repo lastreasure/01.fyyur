@@ -488,21 +488,46 @@ def show_artist(artist_id):
 @ app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
     form = ArtistForm()
-    artist = {
-        "id": 4,
-        "name": "Guns N Petals",
-        "genres": ["Rock n Roll"],
-        "city": "San Francisco",
-        "state": "CA",
-        "phone": "326-123-5000",
-        "website": "https://www.gunsnpetalsband.com",
-        "facebook_link": "https://www.facebook.com/GunsNPetals",
-        "seeking_venue": True,
-        "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-        "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
-    }
-    # TODO: populate form with fields from artist with ID <artist_id>
-    return render_template('forms/edit_artist.html', form=form, artist=artist)
+    artist = {}
+    try:
+        artist_selected = Artist.query.get(artist_id)
+        # print(artist_selected)
+        # print(artist_selected.name)
+
+        artist = {
+            "id": artist_selected.id,
+            "name": artist_selected.name,
+            "genres": artist_selected.genres,
+            "city": artist_selected.city,
+            "state": artist_selected.state,
+            "phone": artist_selected.phone,
+            "website": artist_selected.website,
+            "facebook_link": artist_selected.facebook_link,
+            "seeking_venue": artist_selected.seeking_venue,
+            "seeking_description": artist_selected.seeking_description,
+            "image_link": artist_selected.image_link,
+        }
+
+        form.name.data = artist_selected.name
+        form.genres.data = artist_selected.genres
+        form.city.data = artist_selected.city
+        form.state.data = artist_selected.state
+        form.phone.data = artist_selected.phone
+        form.website_link.data = artist_selected.website
+        form.facebook_link.data = artist_selected.facebook_link
+        form.seeking_venue.data = artist_selected.seeking_venue
+        form.seeking_description.data = artist_selected.seeking_description
+        form.image_link.data = artist_selected.image_link
+
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+        return render_template('forms/edit_artist.html', form=form, artist=artist)
+
+    #  DONE: populate form with fields from artist with ID <artist_id>
+    # https://python-adv-web-apps.readthedocs.io/en/latest/flask_forms.html
 
 
 @ app.route('/artists/<int:artist_id>/edit', methods=['POST'])
@@ -510,7 +535,26 @@ def edit_artist_submission(artist_id):
     # TODO: take values from the form submitted, and update existing
     # artist record with ID <artist_id> using the new attributes
 
-    return redirect(url_for('show_artist', artist_id=artist_id))
+    artist_selected = Artist.query.get(artist_id)
+    try:
+        artist_selected.name = request.form.get('name')
+        artist_selected.city = request.form.get('city')
+        artist_selected.state = request.form.get('state')
+        artist_selected.phone = request.form.get('phone')
+        artist_selected.image_link = request.form.get('image_link')
+        artist_selected.facebook_link = request.form.get('facebook_link')
+        artist_selected.genres = request.form.getlist('genres')
+        artist_selected.website = request.form.get('website')
+        artist_selected.seeking_talent = request.form.get('seeking_talent')
+        artist_selected.seeking_description = request.form.get(
+            'seeking_description')
+        db.session.commit()
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+        return redirect(url_for('show_artist', artist_id=artist_id))
 
 
 @ app.route('/venues/<int:venue_id>/edit', methods=['GET'])
