@@ -544,7 +544,7 @@ def edit_artist_submission(artist_id):
         artist_selected.image_link = request.form.get('image_link')
         artist_selected.facebook_link = request.form.get('facebook_link')
         artist_selected.genres = request.form.getlist('genres')
-        artist_selected.website = request.form.get('website')
+        artist_selected.website = request.form.get('website_link')
         artist_selected.seeking_talent = request.form.get('seeking_talent')
         artist_selected.seeking_description = request.form.get(
             'seeking_description')
