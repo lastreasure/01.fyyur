@@ -173,20 +173,31 @@ def search_venues():
     try:
         venue_query_results = db.session.query(Venue.name, Venue.id, Venue.upcoming_shows_count).filter(
             Venue.name.ilike('%' + search_item + '%')).all()
-        count_upcoming_shows = len(venue_query_results)
+        count_upcoming_venues = len(venue_query_results)
         # print('count', count_upcoming_shows)
         # print(venue_query_results)
+
         for venue in venue_query_results:
+
+            # Acquire num upcoming shows
+            past_shows_list = db.session.query(
+                Show).filter(venue.id == Show.venue_id)
+            show_list = []
+            upcoming_shows = []
+            for past_show in past_shows_list:
+                if (parser.parse(past_show.start_time) > pytz.utc.localize(datetime.now())):
+                    upcoming_shows.append(show_list)
+
             # print(venue.id)
             # print(venue.name)
             data.append({
                 "id": venue.id,
                 "name": venue.name,
-                "num_upcoming_shows": 0
+                "num_upcoming_shows": len(upcoming_shows)
             })
 
             response = {
-                "count": count_upcoming_shows,
+                "count": count_upcoming_venues,
                 "data": data
             }
     except:
@@ -323,7 +334,7 @@ def create_venue_submission():
 
 @ app.route('/venues/<int:venue_id>/delete', methods=['GET', 'DELETE'])
 def delete_venue(venue_id):
-    # TODO: Complete this endpoint for taking a venue_id, and using
+    # DONE: Complete this endpoint for taking a venue_id, and using
     # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
     # query = Task.query.filter_by(category='Archived')
     # query.delete()
@@ -349,34 +360,66 @@ def delete_venue(venue_id):
 
 @ app.route('/artists')
 def artists():
-    # TODO: replace with real data returned from querying the database
-    data = [{
-        "id": 4,
-        "name": "Guns N Petals",
-    }, {
-        "id": 5,
-        "name": "Matt Quevedo",
-    }, {
-        "id": 6,
-        "name": "The Wild Sax Band",
-    }]
-    return render_template('pages/artists.html', artists=data)
+    # DONE: replace with real data returned from querying the database
+    data = []
+    try:
+        artists_listed = db.session.query(Artist).all()
+        print(artists_listed)
+
+        for artists in artists_listed:
+            data.append({
+                "id": artists.id,
+                "name": artists.name
+            })
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        return render_template('pages/artists.html', artists=data)
 
 
 @ app.route('/artists/search', methods=['POST'])
 def search_artists():
-    # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
+    # DONE: implement search on artists with partial string search. Ensure it is case-insensitive.
     # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
     # search for "band" should return "The Wild Sax Band".
-    response = {
-        "count": 1,
-        "data": [{
-            "id": 4,
-            "name": "Guns N Petals",
-            "num_upcoming_shows": 0,
-        }]
-    }
-    return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+    response = {}
+    data = []
+    search_item = request.form.get("search_term")
+    # print(search_item)
+    try:
+        artist_query_results = db.session.query(Artist.name, Artist.id, Artist.upcoming_shows_count).filter(
+            Artist.name.ilike('%' + search_item + '%')).all()
+        count_upcoming_artist = len(artist_query_results)
+        # print('count', count_upcoming_shows)
+        # print(venue_query_results)
+        for artist in artist_query_results:
+
+            # Acquire num upcoming shows
+            past_shows_list = db.session.query(
+                Show).filter(artist.id == Show.artist_id)
+            show_list = []
+            upcoming_shows = []
+            for past_show in past_shows_list:
+                if (parser.parse(past_show.start_time) > pytz.utc.localize(datetime.now())):
+                    upcoming_shows.append(show_list)
+
+            print(len(upcoming_shows))
+            data.append({
+                "id": artist.id,
+                "name": artist.name,
+                "num_upcoming_shows": len(upcoming_shows)
+            })
+
+            response = {
+                "count": count_upcoming_artist,
+                "data": data
+            }
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 
 @ app.route('/artists/<int:artist_id>')
