@@ -321,32 +321,32 @@ def create_venue_submission():
         return render_template('pages/home.html')
 
 
-@ app.route('/venues/<venue_id>/delete', methods=['DELETE'])
-# def delete_venue(venue_id):
-#     # TODO: Complete this endpoint for taking a venue_id, and using
-#     # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-#     # query = Task.query.filter_by(category='Archived')
-#     # query.delete()
-#     venue_name_to_delete = db.session.query(
-#         Venue.name).filter(venue_id)
-#     print(venue_name_to_delete)
-#     try:
-#         venue_to_delete = db.session.query(Venue).filter(Venue.id == venue_id)
-#         venue_to_delete.delete()
-#         db.session.commit()
-#         flash('Venue ' + venue_name_to_delete + ' was successfully deleted!')
-#     except:
-#         db.session.rollback()
-#         print(sys.exc_info())
-#         flash('An error occurred. Venue ' + venue_name_to_delete +
-#               ' unfortuntely could not be listed.')
-#     finally:
-#         db.session.close()
-#         return render_template('pages/home.html')
+@ app.route('/venues/<int:venue_id>/delete', methods=['GET', 'DELETE'])
+def delete_venue(venue_id):
+    # TODO: Complete this endpoint for taking a venue_id, and using
+    # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+    # query = Task.query.filter_by(category='Archived')
+    # query.delete()
+
+    try:
+        venue_to_delete = db.session.query(
+            Venue).filter(Venue.id == venue_id)
+        venue_to_delete.delete()
+        db.session.commit()
+        flash('Venue was successfully deleted!')
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+        flash('An error occurred. Venue unfortuntely could not be listed.')
+    finally:
+        db.session.close()
+        return render_template('pages/home.html')
 # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
 # clicking that button delete it from the db then redirect the user to the homepage
 #  Artists
 #  ----------------------------------------------------------------
+
+
 @ app.route('/artists')
 def artists():
     # TODO: replace with real data returned from querying the database
