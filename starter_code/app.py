@@ -44,23 +44,24 @@ class Venue(db.Model):
     __tablename__ = 'Venue'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
+    name = db.Column(db.String(120), nullable=False)
+    city = db.Column(db.String(120), nullable=False)
+    state = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(120), nullable=False)
+    image_link = db.Column(db.String(500), nullable=False)
+    facebook_link = db.Column(db.String(120), nullable=False)
     # missing fields: genres(array), website(string), seeking_talent(boolean), seeking_description(string)
     # past_shows(array of objects), upcoming_shows(array of objects), past_shows_count(integer), upcoming_shows_count(integer)
-    genres = db.Column(db.String(500))
-    website = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean(120))  # default false
-    seeking_description = db.Column(db.String(500))  # nullable
-    past_shows = db.Column(db.String(500))  # nullable
-    upcoming_shows = db.Column(db.String(500))  # nullable
-    past_shows_count = db.Column(db.Integer)  # default 0
-    upcoming_shows_count = db.Column(db.Integer)  # default 0
+    genres = db.Column(db.String(500), nullable=True)
+    website = db.Column(db.String(120), nullable=True)
+    seeking_talent = db.Column(db.Boolean(
+        120), nullable=True, default=False)  # default false
+    seeking_description = db.Column(db.String(500), nullable=True)  # nullable
+    past_shows = db.Column(db.String(500), nullable=True)  # nullable
+    upcoming_shows = db.Column(db.String(500), nullable=True)  # nullable
+    past_shows_count = db.Column(db.Integer, nullable=True)
+    upcoming_shows_count = db.Column(db.Integer, nullable=True)
     # DEVELOPER NOTE: uncertain how to implement arrays and arrays of objects so defined as strings until time for further research
     # parent to show table
     shows = db.relationship('Show', backref='Venue', lazy=True)
@@ -71,23 +72,24 @@ class Artist(db.Model):
     __tablename__ = 'Artist'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
+    name = db.Column(db.String(120), nullable=False)
+    city = db.Column(db.String(120), nullable=False)
+    state = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(120), nullable=False)
+    genres = db.Column(db.String(120), nullable=False)
+    image_link = db.Column(db.String(500), nullable=False)
+    facebook_link = db.Column(db.String(120), nullable=False)
     # missing fields: genres(array), website(string), seeking_venue(boolean), seeking_description(string),
     # past_shows(array of objects), upcoming_shows(array of objects), past_shows_count(integer), upcoming_shows_count(integer)
-    genres = db.Column(db.String(500))
-    website = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean(120))  # default false
-    seeking_description = db.Column(db.String(500))  # nullable
-    past_shows = db.Column(db.String(500))  # nullable
-    upcoming_shows = db.Column(db.String(500))  # nullable
-    past_shows_count = db.Column(db.Integer)  # default 0
-    upcoming_shows_count = db.Column(db.Integer)  # default 0
+    genres = db.Column(db.String(500), nullable=True)
+    website = db.Column(db.String(120), nullable=True)
+    seeking_venue = db.Column(db.Boolean(
+        120), nullable=True, default=False)  # default false
+    seeking_description = db.Column(db.String(500), nullable=True)  # nullable
+    past_shows = db.Column(db.String(500), nullable=True)  # nullable
+    upcoming_shows = db.Column(db.String(500), nullable=True)  # nullable
+    past_shows_count = db.Column(db.Integer, nullable=True)
+    upcoming_shows_count = db.Column(db.Integer, nullable=True)
     # parent to show table
     shows = db.relationship('Show', backref='Artist', lazy=True)
     # DONE: implement any missing fields, as a database migration using Flask-Migrate
@@ -101,7 +103,7 @@ class Show(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
     artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
-    start_time = db.Column(db.String)
+    start_time = db.Column(db.String, nullable=False)
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -307,9 +309,9 @@ def create_venue_submission():
             seeking_talent=bool(seeking_talent),
             seeking_description=seeking_description,
         )
-        print(new_venue_listing.name)
-        print(new_venue_listing.genres)
-        print(new_venue_listing)
+        # print(new_venue_listing.name)
+        # print(new_venue_listing.genres)
+        # print(new_venue_listing)
         # then 'try' to add to sessions and 'flash' success
         db.session.add(new_venue_listing)
         db.session.commit()
@@ -620,8 +622,8 @@ def edit_venue_submission(venue_id):
             request.form.get('seeking_talent'))
         venue_selected.seeking_description = request.form.get(
             'seeking_description')
-        print(venue_selected)
-        print(venue_selected.name)
+        # print(venue_selected)
+        # print(venue_selected.name)
 
         db.session.commit()
     except:
@@ -672,9 +674,9 @@ def create_artist_submission():
             seeking_venue=bool(seeking_venue),
             seeking_description=seeking_description,
         )
-        print(new_artist_listing.name)
-        print(new_artist_listing.genres)
-        print(new_artist_listing)
+        # print(new_artist_listing.name)
+        # print(new_artist_listing.genres)
+        # print(new_artist_listing)
         # then 'try' to add to sessions and 'flash' success
         db.session.add(new_artist_listing)
         db.session.commit()
@@ -711,15 +713,11 @@ def shows():
     data = []
     try:
         for show in shows_list:
-            # venue_name = Venue.query.get(Venue.name).filter(
-            #     show.venue_id == Venue.id)
-            # artist_name = Artist.query.get(
-            #     Artist.name).filter(show.venue_id == Artist.id)
             venue_name = Venue.query.get(show.venue_id).name
             artist_name = Artist.query.get(show.artist_id).name
             artist_image_link = Artist.query.get(show.artist_id).image_link
-            print(venue_name)
-            print(artist_name)
+            # print(venue_name)
+            # print(artist_name)
 
             data.append({
                 "venue_id": show.venue_id,
@@ -764,9 +762,9 @@ def create_show_submission():
             venue_id=venue_id,
             start_time=utc_start_time,
         )
-        print(new_show_listing.artist_id)
-        print(new_show_listing.venue_id)
-        print(new_show_listing.start_time)
+        # print(new_show_listing.artist_id)
+        # print(new_show_listing.venue_id)
+        # print(new_show_listing.start_time)
 
         db.session.add(new_show_listing)
         db.session.commit()
