@@ -11,9 +11,10 @@ from flask_moment import Moment
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 import logging
-# from models import Venue, Artist, Show
+# from models import *
 from logging import Formatter, FileHandler
-from flask_wtf import Form
+from flask_wtf import FlaskForm
+# from flask_wtf import Form
 from forms import *
 import sys
 from dateutil import parser
@@ -282,48 +283,42 @@ def create_venue_submission():
     # DONE: insert form data as a new Venue record in the db, instead
     # DONE: modify data to be the data object returned from db insertion
     try:
-        name = request.form.get('name')
-        city = request.form.get('city')
-        state = request.form.get('state')
-        address = request.form.get('address')
-        phone = request.form.get('phone')
-        image_link = request.form.get('image_link')
-        facebook_link = request.form.get('facebook_link')
-        genres = request.form.getlist('genres')
-        website = request.form.get('website')
-        seeking_talent = request.form.get('seeking_talent')
-        seeking_description = request.form.get('seeking_description')
 
+        form = VenueForm(request.form)
         new_venue_listing = Venue(
-            name=name,
-            city=city,
-            state=state,
-            address=address,
-            phone=phone,
-            image_link=image_link,
-            facebook_link=facebook_link,
-            genres=', '.join(genres),
-            website=website,
-            seeking_talent=bool(seeking_talent),
-            seeking_description=seeking_description,
+            id=11,
+            name=form.name.data,
+            city=form.city.data,
+            state=form.state.data,
+            address=form.address.data,
+            phone=form.phone.data,
+            image_link=form.image_link.data,
+            facebook_link=form.facebook_link.data,
+            genres=', '.join(form.genres.data),
+            website=form.website_link.data,
+            seeking_talent=bool(form.seeking_talent.data),
+            seeking_description=form.seeking_description.data,
         )
-        # print(new_venue_listing.name)
+
+        # print('city', new_venue_listing.city)
         # print(new_venue_listing.genres)
         # print(new_venue_listing)
         # then 'try' to add to sessions and 'flash' success
         db.session.add(new_venue_listing)
         db.session.commit()
-        # on successful db insert, flash success
-        flash('Venue ' + request.form['name'] + ' was successfully listed!')
+        flash('Venue: {0} created successfully'.format(new_venue_listing.name))
         # then 'except' rollback
         # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
-    except:
+    except Exception as err:
+        flash('An error occurred creating the Venue: {0}. Error: {1}'.format(
+            new_venue_listing.name, err))
         db.session.rollback()
         print(sys.exc_info())
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-        flash('An error occurred. Venue ' +
-              request.form['name'] + ' unfortuntely could not be listed.')
+    # flash('An error occurred. Venue ' +
+    #       request.form['name'] + ' unfortuntely could not be listed.')
+
     # then finally close session
     finally:
         db.session.close()
@@ -649,28 +644,43 @@ def create_artist_submission():
     # DONE: modify data to be the data object returned from db insertion
 
     try:
-        name = request.form.get('name')
-        city = request.form.get('city')
-        state = request.form.get('state')
-        phone = request.form.get('phone')
-        image_link = request.form.get('image_link')
-        facebook_link = request.form.get('facebook_link')
-        genres = request.form.getlist('genres')
-        website = request.form.get('website_link')
-        seeking_venue = request.form.get('seeking_venue')
-        seeking_description = request.form.get('seeking_description')
+        # name = request.form.get('name')
+        # city = request.form.get('city')
+        # state = request.form.get('state')
+        # phone = request.form.get('phone')
+        # image_link = request.form.get('image_link')
+        # facebook_link = request.form.get('facebook_link')
+        # genres = request.form.getlist('genres')
+        # website = request.form.get('website_link')
+        # seeking_venue = request.form.get('seeking_venue')
+        # seeking_description = request.form.get('seeking_description')
 
+        # new_artist_listing = Artist(
+        #     name=name,
+        #     city=city,
+        #     state=state,
+        #     phone=phone,
+        #     image_link=image_link,
+        #     facebook_link=facebook_link,
+        #     genres=', '.join(genres),
+        #     website=website,
+        #     seeking_venue=bool(seeking_venue),
+        #     seeking_description=seeking_description,
+        # )
+
+        form = ArtistForm(request.form)
         new_artist_listing = Artist(
-            name=name,
-            city=city,
-            state=state,
-            phone=phone,
-            image_link=image_link,
-            facebook_link=facebook_link,
-            genres=', '.join(genres),
-            website=website,
-            seeking_venue=bool(seeking_venue),
-            seeking_description=seeking_description,
+            id=11,
+            name=form.name.data,
+            city=form.city.data,
+            state=form.state.data,
+            phone=form.phone.data,
+            image_link=form.image_link.data,
+            facebook_link=form.facebook_link.data,
+            genres=', '.join(form.genres.data),
+            website=form.website_link.data,
+            seeking_venue=bool(form.seeking_venue.data),
+            seeking_description=form.seeking_description.data,
         )
         # print(new_artist_listing.name)
         # print(new_artist_listing.genres)
@@ -679,16 +689,18 @@ def create_artist_submission():
         db.session.add(new_artist_listing)
         db.session.commit()
         # on successful db insert, flash success
-        flash('Artist ' + request.form['name'] + ' was successfully listed!')
+        flash('Artist: {0} created successfully'.format(
+            new_artist_listing.name))
         # then 'except' rollback
         # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
-    except:
+    except Exception as err:
+        flash('An error occurred creating the Artist: {0}. Error: {1}'.format(
+            new_artist_listing.name, err))
         db.session.rollback()
         print(sys.exc_info())
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-        flash('An error occurred. Artist ' +
-              request.form['name'] + ' unfortuntely could not be listed.')
+
     # then finally close session
     finally:
         db.session.close()
@@ -747,19 +759,21 @@ def create_show_submission():
     # artist id, venue_id, start time
 
     try:
-        artist_id = request.form.get('artist_id')
-        venue_id = request.form.get('venue_id')
-        start_time = request.form.get('start_time')
+        form = ShowForm(request.form)
 
+        start_time = str(form.start_time.data)
+        # print(type(start_time))
         start_time_arr = start_time.split(' ')
         utc_start_time = start_time_arr[0] + 'T' + start_time_arr[1] + '.000Z'
 
         new_show_listing = Show(
-            id=8,
-            artist_id=artist_id,
-            venue_id=venue_id,
-            start_time=utc_start_time,
+            id=11,
+            artist_id=form.artist_id.data,
+            venue_id=form.venue_id.data,
+            start_time=utc_start_time
+
         )
+
         # print(new_show_listing.artist_id)
         # print(new_show_listing.venue_id)
         # print(new_show_listing.start_time)
@@ -768,12 +782,14 @@ def create_show_submission():
         db.session.commit()
         # on successful db insert, flash success
         flash('Show was successfully listed!')
-    except:
+    except Exception as err:
+        flash(
+            'An error occured, Show unfortunatelly could not be listed. Error {0}'.format(err))
         db.session.rollback()
         print(sys.exc_info())
     # DONE: on unsuccessful db insert, flash an error instead.
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-        flash('An error occurred. Show unfortuntely could not be listed.')
+
     # then finally close session
     finally:
         db.session.close()
