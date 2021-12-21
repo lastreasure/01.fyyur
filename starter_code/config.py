@@ -18,4 +18,7 @@ class DatabasePath:
     SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}/{}'.format(
         DB_USER, DB_PASSWORD, DB_HOST, DB_NAME)
 
+    SQLALCHEMY_TRACK_MODIFICATIONS = 'false'
+
+
 # DONE IMPLEMENT DATABASE URL
