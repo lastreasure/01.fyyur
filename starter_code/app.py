@@ -11,6 +11,7 @@ from flask_moment import Moment
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 import logging
+# from models import Venue, Artist, Show
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
@@ -25,12 +26,9 @@ import pytz
 
 app = Flask(__name__)
 moment = Moment(app)
-app.config.from_object('config')
+app.config.from_object('config.DatabasePath')
 db = SQLAlchemy(app)
-
 # DONE: connect to a local postgresql database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user1:1234@localhost:5432/fyyurapp'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = 'false'
 
 migrate = Migrate(app, db)
 
