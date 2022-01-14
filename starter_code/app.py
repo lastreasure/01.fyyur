@@ -118,7 +118,7 @@ def search_venues():
 
             # Acquire num upcoming shows
             past_shows_list = db.session.query(
-                Show).join(Venue).filter(venue.id == Show.venue_id)
+                Show).filter(venue.id == Show.venue_id)
             show_list = []
             upcoming_shows = []
             for past_show in past_shows_list:
@@ -327,7 +327,7 @@ def search_artists():
 
             # Acquire num upcoming shows
             past_shows_list = db.session.query(
-                Show).join(Artist).filter(artist.id == Show.artist_id)
+                Show).filter(artist.id == Show.artist_id)
             show_list = []
             upcoming_shows = []
             for past_show in past_shows_list:
@@ -583,7 +583,7 @@ def create_artist_submission():
 
         form = ArtistForm(request.form)
         new_artist_listing = Artist(
-            id=11,
+            # id=11,
             name=form.name.data,
             city=form.city.data,
             state=form.state.data,
@@ -680,7 +680,7 @@ def create_show_submission():
         utc_start_time = start_time_arr[0] + 'T' + start_time_arr[1] + '.000Z'
 
         new_show_listing = Show(
-            id=11,
+            # id=11,
             artist_id=form.artist_id.data,
             venue_id=form.venue_id.data,
             start_time=utc_start_time
