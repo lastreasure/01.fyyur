@@ -606,7 +606,6 @@ def create_artist_submission():
 
         form = ArtistForm(request.form)
         new_artist_listing = Artist(
-            id=19,
             name=form.name.data,
             city=form.city.data,
             state=form.state.data,
@@ -694,22 +693,11 @@ def create_show_submission():
     try:
         form = ShowForm(request.form)
 
-        start_time = str(form.start_time.data)
-        # print(type(start_time))
-        start_time_arr = start_time.split(' ')
-        utc_start_time = start_time_arr[0] + 'T' + start_time_arr[1] + '.000Z'
-
         new_show_listing = Show(
-            # id=11,
             artist_id=form.artist_id.data,
             venue_id=form.venue_id.data,
-            start_time=utc_start_time
-
+            start_time=form.start_time.data
         )
-
-        # print(new_show_listing.artist_id)
-        # print(new_show_listing.venue_id)
-        # print(new_show_listing.start_time)
 
         db.session.add(new_show_listing)
         db.session.commit()
