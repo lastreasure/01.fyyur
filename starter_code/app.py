@@ -118,7 +118,7 @@ def search_venues():
 
             # Acquire num upcoming shows
             past_shows_list = db.session.query(
-                Show).filter(venue.id == Show.venue_id)
+                Show).join(Venue).filter(venue.id == Show.venue_id)
             show_list = []
             upcoming_shows = []
             for past_show in past_shows_list:
@@ -155,7 +155,7 @@ def show_venue(venue_id):
         for venue_attribute in chosen_venue:
             # print(venue_attribute)
             past_shows_list = db.session.query(
-                Show).filter(venue_id == Show.venue_id)
+                Show).join(Venue).filter(venue_id == Show.venue_id)
 
             past_shows = []
             upcoming_shows = []
@@ -327,7 +327,7 @@ def search_artists():
 
             # Acquire num upcoming shows
             past_shows_list = db.session.query(
-                Show).filter(artist.id == Show.artist_id)
+                Show).join(Artist).filter(artist.id == Show.artist_id)
             show_list = []
             upcoming_shows = []
             for past_show in past_shows_list:
@@ -363,7 +363,7 @@ def show_artist(artist_id):
         for artist_attribute in chosen_artist:
             # print(venue_attribute)
             past_shows_list = db.session.query(
-                Show).filter(artist_id == Show.artist_id)
+                Show).join(Artist).filter(artist_id == Show.artist_id)
 
             past_shows = []
             upcoming_shows = []
@@ -580,29 +580,6 @@ def create_artist_submission():
     # DONE: modify data to be the data object returned from db insertion
 
     try:
-        # name = request.form.get('name')
-        # city = request.form.get('city')
-        # state = request.form.get('state')
-        # phone = request.form.get('phone')
-        # image_link = request.form.get('image_link')
-        # facebook_link = request.form.get('facebook_link')
-        # genres = request.form.getlist('genres')
-        # website = request.form.get('website_link')
-        # seeking_venue = request.form.get('seeking_venue')
-        # seeking_description = request.form.get('seeking_description')
-
-        # new_artist_listing = Artist(
-        #     name=name,
-        #     city=city,
-        #     state=state,
-        #     phone=phone,
-        #     image_link=image_link,
-        #     facebook_link=facebook_link,
-        #     genres=', '.join(genres),
-        #     website=website,
-        #     seeking_venue=bool(seeking_venue),
-        #     seeking_description=seeking_description,
-        # )
 
         form = ArtistForm(request.form)
         new_artist_listing = Artist(
