@@ -122,21 +122,21 @@ def search_venues():
     search_item = request.form.get("search_term")
     # print(search_item)
     try:
-        venue_query_results = db.session.query(Venue.name, Venue.id, Venue.upcoming_shows_count).filter(
+        venue_query_results = db.session.query(Venue.name, Venue.id).filter(
             Venue.name.ilike('%' + search_item + '%')).all()
         count_upcoming_venues = len(venue_query_results)
         # print('count', count_upcoming_shows)
         # print(venue_query_results)
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
 
         for venue in venue_query_results:
-
             # Acquire num upcoming shows
             past_shows_list = db.session.query(
                 Show).filter(venue.id == Show.venue_id)
             show_list = []
             upcoming_shows = []
             for past_show in past_shows_list:
-                if (parser.parse(past_show.start_time) > pytz.utc.localize(datetime.now())):
+                if (past_show.start_time > now):
                     upcoming_shows.append(show_list)
 
             # print(venue.id)
