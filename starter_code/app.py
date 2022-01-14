@@ -5,7 +5,15 @@
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import (
+    Flask,
+    render_template,
+    request,
+    Response,
+    flash,
+    redirect,
+    url_for
+)
 from sqlalchemy.sql.expression import distinct
 from flask_moment import Moment
 from flask_migrate import Migrate
@@ -19,6 +27,8 @@ from forms import *
 import sys
 from dateutil import parser
 import pytz
+import datetime
+
 # from django.utils import timezone
 
 #----------------------------------------------------------------------------#
@@ -79,17 +89,29 @@ def venues():
     try:
         venue_areas = db.session.query(distinct(Venue.city), Venue.state).all()
         # print(venue_areas)
-
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
         for area in venue_areas:
-            venue_list_data = db.session.query(Venue.id, Venue.name, Venue.upcoming_shows_count).filter(
-                Venue.city == area[0], Venue.state == area[1])
+            city = area[0]
+            state = area[1]
 
-            data.append({
-                "city": area[0],
-                "state": area[1],
-                "venues": venue_list_data
-            })
+            venue_list = Venue.query.filter_by(city=city, state=state).all()
+            # print(venue_list)
+            for venue in venue_list:
+                venue_name = venue.name
+                venue_id = venue.id
 
+                num_upcoming_shows = Show.query.filter_by(
+                    venue_id=venue_id).filter(now < Show.start_time).all()
+                # print(num_upcoming_shows)
+                data.append({
+                    "city": city,
+                    "state": state,
+                    "venues": [{
+                        "id": venue_id,
+                        "name": venue_name,
+                        "num_upcoming_shows": len(num_upcoming_shows)
+                    }]
+                })
     except:
         db.session.rollback()
         print(sys.exc_info())
@@ -108,21 +130,21 @@ def search_venues():
     search_item = request.form.get("search_term")
     # print(search_item)
     try:
-        venue_query_results = db.session.query(Venue.name, Venue.id, Venue.upcoming_shows_count).filter(
+        venue_query_results = db.session.query(Venue.name, Venue.id).filter(
             Venue.name.ilike('%' + search_item + '%')).all()
         count_upcoming_venues = len(venue_query_results)
         # print('count', count_upcoming_shows)
         # print(venue_query_results)
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
 
         for venue in venue_query_results:
-
             # Acquire num upcoming shows
             past_shows_list = db.session.query(
-                Show).join(Venue).filter(venue.id == Show.venue_id)
+                Show).filter(venue.id == Show.venue_id)
             show_list = []
             upcoming_shows = []
             for past_show in past_shows_list:
-                if (parser.parse(past_show.start_time) > pytz.utc.localize(datetime.now())):
+                if (past_show.start_time > now):
                     upcoming_shows.append(show_list)
 
             # print(venue.id)
@@ -148,31 +170,34 @@ def search_venues():
 def show_venue(venue_id):
     # shows the venue page with the given venue_id
     # DONE: replace with real venue data from the venues table, using venue_id
-    # chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id).all()
-    chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id)
-    # print(chosen_venue)
+
     try:
+        chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id)
+        # print(chosen_venue)
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+
         for venue_attribute in chosen_venue:
             # print(venue_attribute)
-            past_shows_list = db.session.query(
+            all_shows_list = db.session.query(
                 Show).join(Venue).filter(venue_id == Show.venue_id)
 
             past_shows = []
             upcoming_shows = []
-            for past_show in past_shows_list:
-                # print('id', past_show.artist_id)
-                past_show_artist = db.session.query(Artist.name, Artist.image_link).filter(
-                    past_show.artist_id == Artist.id).first()
-                # print(past_show_artist.name)
+
+            for single_show in all_shows_list:
+
+                single_show_artist = db.session.query(Artist.name, Artist.image_link).filter(
+                    single_show.artist_id == Artist.id).first()
+                print(single_show_artist.name)
 
                 show_list = {
-                    "artist_id": past_show.artist_id,
-                    "artist_name": past_show_artist.name,
-                    "artist_image_link": past_show_artist.image_link,
-                    "start_time": past_show.start_time
+                    "artist_id": single_show.artist_id,
+                    "artist_name": single_show_artist.name,
+                    "artist_image_link": single_show_artist.image_link,
+                    "start_time": single_show.start_time
                 }
 
-                if (parser.parse(past_show.start_time) < pytz.utc.localize(datetime.now())):
+                if (single_show.start_time < now):
                     past_shows.append(show_list)
                     # print(past_shows)
                 else:
@@ -218,11 +243,11 @@ def create_venue_form():
 def create_venue_submission():
     # DONE: insert form data as a new Venue record in the db, instead
     # DONE: modify data to be the data object returned from db insertion
+    form = VenueForm(request.form)
     try:
 
         form = VenueForm(request.form)
         new_venue_listing = Venue(
-            id=11,
             name=form.name.data,
             city=form.city.data,
             state=form.state.data,
@@ -230,9 +255,9 @@ def create_venue_submission():
             phone=form.phone.data,
             image_link=form.image_link.data,
             facebook_link=form.facebook_link.data,
-            genres=', '.join(form.genres.data),
+            genres=form.genres.data,
             website=form.website_link.data,
-            seeking_talent=bool(form.seeking_talent.data),
+            seeking_talent=form.seeking_talent.data,
             seeking_description=form.seeking_description.data,
         )
 
@@ -242,12 +267,13 @@ def create_venue_submission():
         # then 'try' to add to sessions and 'flash' success
         db.session.add(new_venue_listing)
         db.session.commit()
-        flash('Venue: {0} created successfully'.format(new_venue_listing.name))
+        flash(f'Venue: {form.name.data} created successfully!')
         # then 'except' rollback
         # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
     except Exception as err:
-        flash('An error occurred creating the Venue: {0}. Error: {1}'.format(
-            new_venue_listing.name, err))
+        # flash('An error occurred creating the Venue: {0}. Error: {1}'.format(
+        #     new_venue_listing.name, err))
+        flash(f'Error creating the Venue: {form.name.data}. Error: {err}')
         db.session.rollback()
         print(sys.exc_info())
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
@@ -318,20 +344,21 @@ def search_artists():
     search_item = request.form.get("search_term")
     # print(search_item)
     try:
-        artist_query_results = db.session.query(Artist.name, Artist.id, Artist.upcoming_shows_count).filter(
+        artist_query_results = db.session.query(Artist.name, Artist.id).filter(
             Artist.name.ilike('%' + search_item + '%')).all()
         count_upcoming_artist = len(artist_query_results)
         # print('count', count_upcoming_shows)
         # print(artist_query_results)
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
         for artist in artist_query_results:
 
             # Acquire num upcoming shows
             past_shows_list = db.session.query(
-                Show).join(Artist).filter(artist.id == Show.artist_id)
+                Show).filter(artist.id == Show.artist_id)
             show_list = []
             upcoming_shows = []
             for past_show in past_shows_list:
-                if (parser.parse(past_show.start_time) > pytz.utc.localize(datetime.now())):
+                if (past_show.start_time > now):
                     upcoming_shows.append(show_list)
 
             # print(len(upcoming_shows))
@@ -357,30 +384,34 @@ def show_artist(artist_id):
     # shows the artist page with the given artist_id
     # DONE: replace with real artist data from the artist table, using artist_id
 
-    chosen_artist = db.session.query(Artist).filter(Artist.id == artist_id)
-    # print(chosen_venue)
     try:
+
+        chosen_artist = db.session.query(Artist).filter(Artist.id == artist_id)
+        # print(chosen_venue)
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+
         for artist_attribute in chosen_artist:
             # print(venue_attribute)
-            past_shows_list = db.session.query(
+            all_shows_list = db.session.query(
                 Show).join(Artist).filter(artist_id == Show.artist_id)
 
             past_shows = []
             upcoming_shows = []
-            for past_show in past_shows_list:
-                # print('id', past_show.artist_id)
-                past_show_venue = db.session.query(Venue.name, Venue.image_link).filter(
-                    past_show.venue_id == Venue.id).first()
-                # print(past_show_artist.name)
+
+            for single_show in all_shows_list:
+
+                single_show_venue = db.session.query(Venue.name, Venue.image_link).filter(
+                    single_show.venue_id == Venue.id).first()
+                # print(single_show_artist.name)
 
                 show_list = {
-                    "venue_id": past_show.venue_id,
-                    "venue_name": past_show_venue.name,
-                    "venue_image_link": past_show_venue.image_link,
-                    "start_time": past_show.start_time
+                    "venue_id": single_show.venue_id,
+                    "venue_name": single_show_venue.name,
+                    "venue_image_link": single_show_venue.image_link,
+                    "start_time": single_show.start_time
                 }
 
-                if (parser.parse(past_show.start_time) < pytz.utc.localize(datetime.now())):
+                if (single_show.start_time < now):
                     past_shows.append(show_list)
                     # print(past_shows)
                 else:
@@ -473,7 +504,7 @@ def edit_artist_submission(artist_id):
         artist_selected.phone = request.form.get('phone')
         artist_selected.image_link = request.form.get('image_link')
         artist_selected.facebook_link = request.form.get('facebook_link')
-        artist_selected.genres = request.form.getlist('genres')
+        artist_selected.genres = request.form.get('genres')
         artist_selected.website = request.form.get('website_link')
         artist_selected.seeking_talent = request.form.get('seeking_talent')
         artist_selected.seeking_description = request.form.get(
@@ -545,10 +576,9 @@ def edit_venue_submission(venue_id):
         venue_selected.phone = request.form.get('phone')
         venue_selected.image_link = request.form.get('image_link')
         venue_selected.facebook_link = request.form.get('facebook_link')
-        venue_selected.genres = request.form.getlist('genres')
+        venue_selected.genres = request.form.get('genres')
         venue_selected.website = request.form.get('website_link')
-        venue_selected.seeking_talent = bool(
-            request.form.get('seeking_talent'))
+        venue_selected.seeking_talent = request.form.get('seeking_talent')
         venue_selected.seeking_description = request.form.get(
             'seeking_description')
         # print(venue_selected)
@@ -583,32 +613,27 @@ def create_artist_submission():
 
         form = ArtistForm(request.form)
         new_artist_listing = Artist(
-            id=11,
             name=form.name.data,
             city=form.city.data,
             state=form.state.data,
             phone=form.phone.data,
             image_link=form.image_link.data,
             facebook_link=form.facebook_link.data,
-            genres=', '.join(form.genres.data),
+            genres=form.genres.data,
             website=form.website_link.data,
-            seeking_venue=bool(form.seeking_venue.data),
+            seeking_venue=form.seeking_venue.data,
             seeking_description=form.seeking_description.data,
         )
-        # print(new_artist_listing.name)
-        # print(new_artist_listing.genres)
-        # print(new_artist_listing)
-        # then 'try' to add to sessions and 'flash' success
+
         db.session.add(new_artist_listing)
         db.session.commit()
         # on successful db insert, flash success
-        flash('Artist: {0} created successfully'.format(
-            new_artist_listing.name))
+        flash(f'Artist: {form.name.data} created successfully!')
+
         # then 'except' rollback
         # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
     except Exception as err:
-        flash('An error occurred creating the Artist: {0}. Error: {1}'.format(
-            new_artist_listing.name, err))
+        flash(f'Error creating the Venue: {form.name.data}. Error: {err}')
         db.session.rollback()
         print(sys.exc_info())
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
@@ -674,22 +699,11 @@ def create_show_submission():
     try:
         form = ShowForm(request.form)
 
-        start_time = str(form.start_time.data)
-        # print(type(start_time))
-        start_time_arr = start_time.split(' ')
-        utc_start_time = start_time_arr[0] + 'T' + start_time_arr[1] + '.000Z'
-
         new_show_listing = Show(
-            id=11,
             artist_id=form.artist_id.data,
             venue_id=form.venue_id.data,
-            start_time=utc_start_time
-
+            start_time=form.start_time.data
         )
-
-        # print(new_show_listing.artist_id)
-        # print(new_show_listing.venue_id)
-        # print(new_show_listing.start_time)
 
         db.session.add(new_show_listing)
         db.session.commit()
@@ -697,7 +711,7 @@ def create_show_submission():
         flash('Show was successfully listed!')
     except Exception as err:
         flash(
-            'An error occured, Show unfortunatelly could not be listed. Error {0}'.format(err))
+            'An error occured, Show unfortunately could not be listed. Error {0}'.format(err))
         db.session.rollback()
         print(sys.exc_info())
     # DONE: on unsuccessful db insert, flash an error instead.
