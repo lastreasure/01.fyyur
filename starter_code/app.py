@@ -164,7 +164,6 @@ def show_venue(venue_id):
     # DONE: replace with real venue data from the venues table, using venue_id
 
     try:
-        # chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id).all()
         chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id)
         # print(chosen_venue)
         now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
@@ -178,7 +177,7 @@ def show_venue(venue_id):
             upcoming_shows = []
 
             for single_show in all_shows_list:
-                # print('id', past_show.artist_id)
+
                 single_show_artist = db.session.query(Artist.name, Artist.image_link).filter(
                     single_show.artist_id == Artist.id).first()
                 print(single_show_artist.name)
@@ -236,11 +235,12 @@ def create_venue_form():
 def create_venue_submission():
     # DONE: insert form data as a new Venue record in the db, instead
     # DONE: modify data to be the data object returned from db insertion
+    form = VenueForm(request.form)
     try:
 
         form = VenueForm(request.form)
         new_venue_listing = Venue(
-            id=11,
+            id=16,
             name=form.name.data,
             city=form.city.data,
             state=form.state.data,
@@ -248,9 +248,9 @@ def create_venue_submission():
             phone=form.phone.data,
             image_link=form.image_link.data,
             facebook_link=form.facebook_link.data,
-            genres=', '.join(form.genres.data),
+            genres=form.genres.data,
             website=form.website_link.data,
-            seeking_talent=bool(form.seeking_talent.data),
+            seeking_talent=form.seeking_talent.data,
             seeking_description=form.seeking_description.data,
         )
 
@@ -264,8 +264,9 @@ def create_venue_submission():
         # then 'except' rollback
         # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
     except Exception as err:
-        flash('An error occurred creating the Venue: {0}. Error: {1}'.format(
-            new_venue_listing.name, err))
+        # flash('An error occurred creating the Venue: {0}. Error: {1}'.format(
+        #     new_venue_listing.name, err))
+        flash(f'Error creating the Venue: {form.name.data}. Error: {err}')
         db.session.rollback()
         print(sys.exc_info())
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
