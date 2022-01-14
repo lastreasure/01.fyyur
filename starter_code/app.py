@@ -162,31 +162,35 @@ def search_venues():
 def show_venue(venue_id):
     # shows the venue page with the given venue_id
     # DONE: replace with real venue data from the venues table, using venue_id
-    # chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id).all()
-    chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id)
-    # print(chosen_venue)
+
     try:
+        # chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id).all()
+        chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id)
+        # print(chosen_venue)
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+
         for venue_attribute in chosen_venue:
             # print(venue_attribute)
-            past_shows_list = db.session.query(
+            all_shows_list = db.session.query(
                 Show).join(Venue).filter(venue_id == Show.venue_id)
 
             past_shows = []
             upcoming_shows = []
-            for past_show in past_shows_list:
+
+            for single_show in all_shows_list:
                 # print('id', past_show.artist_id)
-                past_show_artist = db.session.query(Artist.name, Artist.image_link).filter(
-                    past_show.artist_id == Artist.id).first()
-                # print(past_show_artist.name)
+                single_show_artist = db.session.query(Artist.name, Artist.image_link).filter(
+                    single_show.artist_id == Artist.id).first()
+                print(single_show_artist.name)
 
                 show_list = {
-                    "artist_id": past_show.artist_id,
-                    "artist_name": past_show_artist.name,
-                    "artist_image_link": past_show_artist.image_link,
-                    "start_time": past_show.start_time
+                    "artist_id": single_show.artist_id,
+                    "artist_name": single_show_artist.name,
+                    "artist_image_link": single_show_artist.image_link,
+                    "start_time": single_show.start_time
                 }
 
-                if (parser.parse(past_show.start_time) < pytz.utc.localize(datetime.now())):
+                if (single_show.start_time < now):
                     past_shows.append(show_list)
                     # print(past_shows)
                 else:
