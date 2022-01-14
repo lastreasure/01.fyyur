@@ -376,30 +376,34 @@ def show_artist(artist_id):
     # shows the artist page with the given artist_id
     # DONE: replace with real artist data from the artist table, using artist_id
 
-    chosen_artist = db.session.query(Artist).filter(Artist.id == artist_id)
-    # print(chosen_venue)
     try:
+
+        chosen_artist = db.session.query(Artist).filter(Artist.id == artist_id)
+        # print(chosen_venue)
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+
         for artist_attribute in chosen_artist:
             # print(venue_attribute)
-            past_shows_list = db.session.query(
+            all_shows_list = db.session.query(
                 Show).join(Artist).filter(artist_id == Show.artist_id)
 
             past_shows = []
             upcoming_shows = []
-            for past_show in past_shows_list:
-                # print('id', past_show.artist_id)
-                past_show_venue = db.session.query(Venue.name, Venue.image_link).filter(
-                    past_show.venue_id == Venue.id).first()
-                # print(past_show_artist.name)
+
+            for single_show in all_shows_list:
+
+                single_show_venue = db.session.query(Venue.name, Venue.image_link).filter(
+                    single_show.venue_id == Venue.id).first()
+                # print(single_show_artist.name)
 
                 show_list = {
-                    "venue_id": past_show.venue_id,
-                    "venue_name": past_show_venue.name,
-                    "venue_image_link": past_show_venue.image_link,
-                    "start_time": past_show.start_time
+                    "venue_id": single_show.venue_id,
+                    "venue_name": single_show_venue.name,
+                    "venue_image_link": single_show_venue.image_link,
+                    "start_time": single_show.start_time
                 }
 
-                if (parser.parse(past_show.start_time) < pytz.utc.localize(datetime.now())):
+                if (single_show.start_time < now):
                     past_shows.append(show_list)
                     # print(past_shows)
                 else:
@@ -602,22 +606,19 @@ def create_artist_submission():
 
         form = ArtistForm(request.form)
         new_artist_listing = Artist(
-            # id=11,
+            id=19,
             name=form.name.data,
             city=form.city.data,
             state=form.state.data,
             phone=form.phone.data,
             image_link=form.image_link.data,
             facebook_link=form.facebook_link.data,
-            genres=', '.join(form.genres.data),
+            genres=form.genres.data,
             website=form.website_link.data,
-            seeking_venue=bool(form.seeking_venue.data),
+            seeking_venue=form.seeking_venue.data,
             seeking_description=form.seeking_description.data,
         )
-        # print(new_artist_listing.name)
-        # print(new_artist_listing.genres)
-        # print(new_artist_listing)
-        # then 'try' to add to sessions and 'flash' success
+
         db.session.add(new_artist_listing)
         db.session.commit()
         # on successful db insert, flash success
