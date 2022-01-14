@@ -5,7 +5,15 @@
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import (
+    Flask,
+    render_template,
+    request,
+    Response,
+    flash,
+    redirect,
+    url_for
+)
 from sqlalchemy.sql.expression import distinct
 from flask_moment import Moment
 from flask_migrate import Migrate
@@ -259,7 +267,7 @@ def create_venue_submission():
         # then 'try' to add to sessions and 'flash' success
         db.session.add(new_venue_listing)
         db.session.commit()
-        flash('Venue: {0} created successfully'.format(new_venue_listing.name))
+        flash(f'Venue: {form.name.data} created successfully!')
         # then 'except' rollback
         # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
     except Exception as err:
@@ -496,7 +504,7 @@ def edit_artist_submission(artist_id):
         artist_selected.phone = request.form.get('phone')
         artist_selected.image_link = request.form.get('image_link')
         artist_selected.facebook_link = request.form.get('facebook_link')
-        artist_selected.genres = request.form.getlist('genres')
+        artist_selected.genres = request.form.get('genres')
         artist_selected.website = request.form.get('website_link')
         artist_selected.seeking_talent = request.form.get('seeking_talent')
         artist_selected.seeking_description = request.form.get(
@@ -568,10 +576,9 @@ def edit_venue_submission(venue_id):
         venue_selected.phone = request.form.get('phone')
         venue_selected.image_link = request.form.get('image_link')
         venue_selected.facebook_link = request.form.get('facebook_link')
-        venue_selected.genres = request.form.getlist('genres')
+        venue_selected.genres = request.form.get('genres')
         venue_selected.website = request.form.get('website_link')
-        venue_selected.seeking_talent = bool(
-            request.form.get('seeking_talent'))
+        venue_selected.seeking_talent = request.form.get('seeking_talent')
         venue_selected.seeking_description = request.form.get(
             'seeking_description')
         # print(venue_selected)
@@ -621,13 +628,12 @@ def create_artist_submission():
         db.session.add(new_artist_listing)
         db.session.commit()
         # on successful db insert, flash success
-        flash('Artist: {0} created successfully'.format(
-            new_artist_listing.name))
+        flash(f'Artist: {form.name.data} created successfully!')
+
         # then 'except' rollback
         # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
     except Exception as err:
-        flash('An error occurred creating the Artist: {0}. Error: {1}'.format(
-            new_artist_listing.name, err))
+        flash(f'Error creating the Venue: {form.name.data}. Error: {err}')
         db.session.rollback()
         print(sys.exc_info())
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
@@ -705,7 +711,7 @@ def create_show_submission():
         flash('Show was successfully listed!')
     except Exception as err:
         flash(
-            'An error occured, Show unfortunatelly could not be listed. Error {0}'.format(err))
+            'An error occured, Show unfortunately could not be listed. Error {0}'.format(err))
         db.session.rollback()
         print(sys.exc_info())
     # DONE: on unsuccessful db insert, flash an error instead.
