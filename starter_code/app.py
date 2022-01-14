@@ -240,7 +240,6 @@ def create_venue_submission():
 
         form = VenueForm(request.form)
         new_venue_listing = Venue(
-            id=16,
             name=form.name.data,
             city=form.city.data,
             state=form.state.data,
@@ -337,11 +336,12 @@ def search_artists():
     search_item = request.form.get("search_term")
     # print(search_item)
     try:
-        artist_query_results = db.session.query(Artist.name, Artist.id, Artist.upcoming_shows_count).filter(
+        artist_query_results = db.session.query(Artist.name, Artist.id).filter(
             Artist.name.ilike('%' + search_item + '%')).all()
         count_upcoming_artist = len(artist_query_results)
         # print('count', count_upcoming_shows)
         # print(artist_query_results)
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
         for artist in artist_query_results:
 
             # Acquire num upcoming shows
@@ -350,7 +350,7 @@ def search_artists():
             show_list = []
             upcoming_shows = []
             for past_show in past_shows_list:
-                if (parser.parse(past_show.start_time) > pytz.utc.localize(datetime.now())):
+                if (past_show.start_time > now):
                     upcoming_shows.append(show_list)
 
             # print(len(upcoming_shows))
