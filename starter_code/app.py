@@ -19,6 +19,8 @@ from forms import *
 import sys
 from dateutil import parser
 import pytz
+import datetime
+
 # from django.utils import timezone
 
 #----------------------------------------------------------------------------#
@@ -79,17 +81,29 @@ def venues():
     try:
         venue_areas = db.session.query(distinct(Venue.city), Venue.state).all()
         # print(venue_areas)
-
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
         for area in venue_areas:
-            venue_list_data = db.session.query(Venue.id, Venue.name, Venue.upcoming_shows_count).filter(
-                Venue.city == area[0], Venue.state == area[1])
+            city = area[0]
+            state = area[1]
 
-            data.append({
-                "city": area[0],
-                "state": area[1],
-                "venues": venue_list_data
-            })
+            venue_list = Venue.query.filter_by(city=city, state=state).all()
+            # print(venue_list)
+            for venue in venue_list:
+                venue_name = venue.name
+                venue_id = venue.id
 
+                num_upcoming_shows = Show.query.filter_by(
+                    venue_id=venue_id).filter(now < Show.start_time).all()
+                # print(num_upcoming_shows)
+                data.append({
+                    "city": city,
+                    "state": state,
+                    "venues": [{
+                        "id": venue_id,
+                        "name": venue_name,
+                        "num_upcoming_shows": len(num_upcoming_shows)
+                    }]
+                })
     except:
         db.session.rollback()
         print(sys.exc_info())
