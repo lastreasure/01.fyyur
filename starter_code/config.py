@@ -22,5 +22,7 @@ class DatabasePath:
 
     SQLALCHEMY_ECHO = True
 
+    WTF_CSRF_ENABLED = False
+
 
 # DONE IMPLEMENT DATABASE URL
