@@ -103,15 +103,15 @@ def venues():
                 num_upcoming_shows = Show.query.filter_by(
                     venue_id=venue_id).filter(now < Show.start_time).all()
                 # print(num_upcoming_shows)
-                data.append({
-                    "city": city,
-                    "state": state,
-                    "venues": [{
-                        "id": venue_id,
-                        "name": venue_name,
-                        "num_upcoming_shows": len(num_upcoming_shows)
-                    }]
-                })
+            data.append({
+                "city": city,
+                "state": state,
+                "venues": [{
+                    "id": venue_id,
+                    "name": venue_name,
+                    "num_upcoming_shows": len(num_upcoming_shows)
+                }]
+            })
     except:
         db.session.rollback()
         print(sys.exc_info())
@@ -135,7 +135,8 @@ def search_venues():
         count_upcoming_venues = len(venue_query_results)
         # print('count', count_upcoming_shows)
         # print(venue_query_results)
-        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+        # now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+        now = datetime.datetime.now()
 
         for venue in venue_query_results:
             # Acquire num upcoming shows
