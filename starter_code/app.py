@@ -244,30 +244,33 @@ def create_venue_submission():
     # DONE: modify data to be the data object returned from db insertion
     form = VenueForm(request.form)
     try:
+        if form.validate():
+            new_venue_listing = Venue(
+                name=form.name.data,
+                city=form.city.data,
+                state=form.state.data,
+                address=form.address.data,
+                phone=form.phone.data,
+                image_link=form.image_link.data,
+                facebook_link=form.facebook_link.data,
+                genres=form.genres.data,
+                website=form.website_link.data,
+                seeking_talent=form.seeking_talent.data,
+                seeking_description=form.seeking_description.data,
+            )
+            # print('city', new_venue_listing.city)
+            # print(new_venue_listing.genres)
+            # print(new_venue_listing)
+            # then 'try' to add to sessions and 'flash' success
+            db.session.add(new_venue_listing)
+            db.session.commit()
+            flash(f'Venue: {form.name.data} created successfully!')
+        else:
+            print(form.errors)
+            flash(f'Error within the form, please correct before submitting')
 
-        new_venue_listing = Venue(
-            name=form.name.data,
-            city=form.city.data,
-            state=form.state.data,
-            address=form.address.data,
-            phone=form.phone.data,
-            image_link=form.image_link.data,
-            facebook_link=form.facebook_link.data,
-            genres=form.genres.data,
-            website=form.website_link.data,
-            seeking_talent=form.seeking_talent.data,
-            seeking_description=form.seeking_description.data,
-        )
-
-        # print('city', new_venue_listing.city)
-        # print(new_venue_listing.genres)
-        # print(new_venue_listing)
-        # then 'try' to add to sessions and 'flash' success
-        db.session.add(new_venue_listing)
-        db.session.commit()
-        flash(f'Venue: {form.name.data} created successfully!')
-        # then 'except' rollback
-        # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
+            # then 'except' rollback
+            # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
     except Exception as err:
         # flash('An error occurred creating the Venue: {0}. Error: {1}'.format(
         #     new_venue_listing.name, err))
@@ -608,28 +611,31 @@ def create_artist_submission():
     # DONE: modify data to be the data object returned from db insertion
 
     try:
-
         form = ArtistForm(request.form)
-        new_artist_listing = Artist(
-            name=form.name.data,
-            city=form.city.data,
-            state=form.state.data,
-            phone=form.phone.data,
-            image_link=form.image_link.data,
-            facebook_link=form.facebook_link.data,
-            genres=form.genres.data,
-            website=form.website_link.data,
-            seeking_venue=form.seeking_venue.data,
-            seeking_description=form.seeking_description.data,
-        )
+        if form.validate():
+            new_artist_listing = Artist(
+                name=form.name.data,
+                city=form.city.data,
+                state=form.state.data,
+                phone=form.phone.data,
+                image_link=form.image_link.data,
+                facebook_link=form.facebook_link.data,
+                genres=form.genres.data,
+                website=form.website_link.data,
+                seeking_venue=form.seeking_venue.data,
+                seeking_description=form.seeking_description.data,
+            )
 
-        db.session.add(new_artist_listing)
-        db.session.commit()
-        # on successful db insert, flash success
-        flash(f'Artist: {form.name.data} created successfully!')
+            db.session.add(new_artist_listing)
+            db.session.commit()
+            # on successful db insert, flash success
+            flash(f'Artist: {form.name.data} created successfully!')
+        else:
+            print(form.errors)
+            flash(f'Error within the form, please correct before submitting')
 
-        # then 'except' rollback
-        # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
+            # then 'except' rollback
+            # DONE: on unsuccessful db insert, flash an error instead. - modify 'flash' for unsuccessful
     except Exception as err:
         flash(f'Error creating the Venue: {form.name.data}. Error: {err}')
         db.session.rollback()
