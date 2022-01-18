@@ -27,7 +27,6 @@ from forms import *
 import sys
 from dateutil import parser
 import pytz
-import datetime
 
 # from django.utils import timezone
 
@@ -89,7 +88,7 @@ def venues():
     try:
         venue_areas = db.session.query(distinct(Venue.city), Venue.state).all()
         # print(venue_areas)
-        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+        now = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
         for area in venue_areas:
             city = area[0]
             state = area[1]
@@ -135,8 +134,7 @@ def search_venues():
         count_upcoming_venues = len(venue_query_results)
         # print('count', count_upcoming_shows)
         # print(venue_query_results)
-        # now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
-        now = datetime.datetime.now()
+        now = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
 
         for venue in venue_query_results:
             # Acquire num upcoming shows
@@ -175,7 +173,7 @@ def show_venue(venue_id):
     try:
         chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id)
         # print(chosen_venue)
-        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+        now = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
 
         for venue_attribute in chosen_venue:
             # print(venue_attribute)
@@ -247,7 +245,6 @@ def create_venue_submission():
     form = VenueForm(request.form)
     try:
 
-        form = VenueForm(request.form)
         new_venue_listing = Venue(
             name=form.name.data,
             city=form.city.data,
@@ -350,7 +347,7 @@ def search_artists():
         count_upcoming_artist = len(artist_query_results)
         # print('count', count_upcoming_shows)
         # print(artist_query_results)
-        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+        now = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
         for artist in artist_query_results:
 
             # Acquire num upcoming shows
@@ -389,7 +386,7 @@ def show_artist(artist_id):
 
         chosen_artist = db.session.query(Artist).filter(Artist.id == artist_id)
         # print(chosen_venue)
-        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+        now = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
 
         for artist_attribute in chosen_artist:
             # print(venue_attribute)
@@ -674,7 +671,7 @@ def shows():
                 "artist_id": show.artist_id,
                 "artist_name": artist_name,
                 "artist_image_link": artist_image_link,
-                "start_time": str(show.start_time)
+                "start_time": show.start_time
             })
     except:
         db.session.rollback()
