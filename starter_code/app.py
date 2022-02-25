@@ -88,7 +88,8 @@ def venues():
     try:
         venue_areas = db.session.query(distinct(Venue.city), Venue.state).all()
         # print(venue_areas)
-        now = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+        now = datetime.utcnow()
+
         for area in venue_areas:
             city = area[0]
             state = area[1]
@@ -100,7 +101,7 @@ def venues():
                 venue_id = venue.id
 
                 num_upcoming_shows = Show.query.filter_by(
-                    venue_id=venue_id).filter(now < Show.start_time).all()
+                    venue_id=venue_id).filter(datetime.strftime(now, '%Y-%m-%d %H:%S:%M') < Show.start_time).all()
                 # print(num_upcoming_shows)
             data.append({
                 "city": city,
@@ -134,7 +135,7 @@ def search_venues():
         count_upcoming_venues = len(venue_query_results)
         # print('count', count_upcoming_shows)
         # print(venue_query_results)
-        now = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+        now = datetime.now()
 
         for venue in venue_query_results:
             # Acquire num upcoming shows
@@ -143,7 +144,7 @@ def search_venues():
             show_list = []
             upcoming_shows = []
             for past_show in past_shows_list:
-                if (past_show.start_time > now):
+                if (past_show.start_time > datetime.strftime(now, '%Y-%m-%d %H:%S:%M')):
                     upcoming_shows.append(show_list)
 
             # print(venue.id)
@@ -173,7 +174,7 @@ def show_venue(venue_id):
     try:
         chosen_venue = db.session.query(Venue).filter(Venue.id == venue_id)
         # print(chosen_venue)
-        now = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+        now = datetime.now()
 
         for venue_attribute in chosen_venue:
             # print(venue_attribute)
@@ -196,7 +197,7 @@ def show_venue(venue_id):
                     "start_time": single_show.start_time
                 }
 
-                if (single_show.start_time < now):
+                if (single_show.start_time < datetime.strftime(now, '%Y-%m-%d %H:%S:%M')):
                     past_shows.append(show_list)
                     # print(past_shows)
                 else:
@@ -350,7 +351,7 @@ def search_artists():
         count_upcoming_artist = len(artist_query_results)
         # print('count', count_upcoming_shows)
         # print(artist_query_results)
-        now = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+        now = datetime.utcnow()
         for artist in artist_query_results:
 
             # Acquire num upcoming shows
@@ -359,7 +360,7 @@ def search_artists():
             show_list = []
             upcoming_shows = []
             for past_show in past_shows_list:
-                if (past_show.start_time > now):
+                if (past_show.start_time > datetime.strftime(now, '%Y-%m-%d %H:%S:%M')):
                     upcoming_shows.append(show_list)
 
             # print(len(upcoming_shows))
@@ -389,7 +390,7 @@ def show_artist(artist_id):
 
         chosen_artist = db.session.query(Artist).filter(Artist.id == artist_id)
         # print(chosen_venue)
-        now = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+        now = datetime.now()
 
         for artist_attribute in chosen_artist:
             # print(venue_attribute)
@@ -412,7 +413,7 @@ def show_artist(artist_id):
                     "start_time": single_show.start_time
                 }
 
-                if (single_show.start_time < now):
+                if (single_show.start_time < datetime.strftime(now, '%Y-%m-%d %H:%S:%M')):
                     past_shows.append(show_list)
                     # print(past_shows)
                 else:
